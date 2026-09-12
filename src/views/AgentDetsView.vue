@@ -96,6 +96,38 @@
         </div>
       </div>
 
+      <!-- Credit Alerts Card -->
+      <div class="bg-white dark:bg-navy-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-navy-700 flex flex-col">
+        <div class="flex items-center justify-between gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-navy-700">
+          <div class="flex items-center gap-3">
+            <div class="p-2.5 rounded-xl bg-amber-50 text-amber-500 dark:bg-navy-900">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-navy-700 dark:text-white">Credit Alerts</h3>
+          </div>
+          <button @click="openCreditAlertModal" class="p-2 hover:bg-gray-100 dark:hover:bg-navy-700 rounded-full transition-colors text-navy-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="space-y-4 flex-1">
+          <div class="flex flex-col gap-1">
+            <label class="text-[11px] font-bold text-navy-300 uppercase tracking-widest">Low-Credit SMS Alerts</label>
+            <p class="font-bold" :class="user.creditLimitAlertsEnabled === false ? 'text-red-500' : 'text-green-500'">
+              {{ user.creditLimitAlertsEnabled === false ? 'Disabled' : 'Enabled' }}
+            </p>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-[11px] font-bold text-navy-300 uppercase tracking-widest">Notification Threshold</label>
+            <p class="font-bold text-navy-700 dark:text-white">₦{{ user.creditNotificationLimit ?? 5000 }}</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Bank Details Card -->
       <div class="bg-white dark:bg-navy-800 rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-navy-700 flex flex-col">
         <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-navy-700">
@@ -161,6 +193,48 @@
         </template>
       </AppTable>
     </div>
+
+    <!-- Edit Credit Alert Settings Modal -->
+    <Modal :show="showCreditAlertModal" @close="closeCreditAlertModal">
+      <template v-slot:title>
+        <div class="flex items-center justify-between">
+          <h5 class="text-xl font-bold text-navy-700 dark:text-white">Credit Alert Settings</h5>
+          <button @click="closeCreditAlertModal" class="p-2 hover:bg-gray-100 dark:hover:bg-navy-700 rounded-full transition-colors text-navy-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </template>
+
+      <template v-slot:description>
+        <div class="mt-5 space-y-5">
+          <label class="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-navy-900 rounded-2xl border border-gray-100 dark:border-navy-700 cursor-pointer">
+            <span class="text-sm font-medium text-navy-700 dark:text-navy-200">Enable low-credit SMS alerts</span>
+            <input type="checkbox" v-model="editCreditAlertDets.enabled" class="w-4.5 h-4.5 rounded border-gray-300 text-brand-500 focus:ring-brand-500 cursor-pointer">
+          </label>
+
+          <div>
+            <label class="block text-xs font-semibold text-navy-400 uppercase tracking-widest mb-1.5">Notification Threshold (₦)</label>
+            <input type="number" v-model="editCreditAlertDets.notificationLimit"
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-navy-900 border border-gray-200 dark:border-navy-600 rounded-xl text-navy-700 dark:text-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all outline-none font-bold text-lg">
+          </div>
+        </div>
+      </template>
+
+      <template v-slot:buttons>
+        <div class="mt-6 flex gap-3 w-full">
+          <button class="flex-1 py-3 text-sm font-bold text-navy-700 dark:text-white bg-gray-100 hover:bg-gray-200 dark:bg-navy-900 dark:hover:bg-navy-700 rounded-xl transition-all"
+            @click="closeCreditAlertModal">
+            Cancel
+          </button>
+          <button @click="updateCreditAlertSettings"
+            class="flex-1 py-3 text-sm font-bold text-white bg-brand-500 hover:bg-brand-600 rounded-xl transition-all shadow-lg shadow-brand-500/30">
+            Save Changes
+          </button>
+        </div>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -174,6 +248,7 @@ import { useRouter } from 'vue-router';
 import logOut from '../services/logout';
 import Spinner from '../components/Spinner.vue';
 import AppTable from '@/components/AppTable.vue';
+import Modal from '@/components/Modal.vue';
 const snackbar = useSnackbar();
 const authStore = useAuthStore();
 const router = useRouter();
@@ -196,6 +271,42 @@ let terminalTableHeader = reactive([
   { label: 'Cashier Name', key: 'customerName' },
   { label: 'Status', key: 'isActive' }
 ])
+
+let showCreditAlertModal = ref(false);
+let editCreditAlertDets = reactive({ enabled: true, notificationLimit: 5000 });
+
+const openCreditAlertModal = () => {
+  editCreditAlertDets.enabled = user.value.creditLimitAlertsEnabled !== false;
+  editCreditAlertDets.notificationLimit = user.value.creditNotificationLimit ?? 5000;
+  showCreditAlertModal.value = true;
+};
+
+const closeCreditAlertModal = () => {
+  showCreditAlertModal.value = false;
+};
+
+const updateCreditAlertSettings = async () => {
+  try {
+    const res = await axios.put('Retail/shop/credit-alert-settings', {
+      enabled: editCreditAlertDets.enabled,
+      notificationLimit: Number(editCreditAlertDets.notificationLimit)
+    });
+    if (res.status == 200) {
+      user.value.creditLimitAlertsEnabled = editCreditAlertDets.enabled;
+      user.value.creditNotificationLimit = Number(editCreditAlertDets.notificationLimit);
+      closeCreditAlertModal();
+      snackbar.add({
+        type: 'success',
+        text: `Credit alert settings updated`
+      });
+    }
+  } catch (err) {
+    snackbar.add({
+      type: 'error',
+      text: `Please contact support ${err.message}`
+    });
+  }
+};
 
 const fetchUserdets = async () => {
     try {
